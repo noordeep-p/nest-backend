@@ -4,6 +4,7 @@ import { UserModule } from './user/user.module';
 import { SearchModule } from './search/search.module';
 import { CollectionModule } from './collection/collection.module';
 import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
@@ -13,6 +14,16 @@ import { ConfigModule } from '@nestjs/config';
     CollectionModule,
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: process.env.POSTGRES_HOST,
+      port: Number(process.env.POSTGRES_PORT),
+      username: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.POSTGRES_DB,
+      entities: [],
+      synchronize: false,
     }),
   ],
 })
