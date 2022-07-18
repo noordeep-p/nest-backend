@@ -16,7 +16,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       isGlobal: true,
     }),
     TypeOrmModule.forRoot({
-      type: 'mysql',
+      type: 'postgres',
       host: process.env.POSTGRES_HOST,
       port: Number(process.env.POSTGRES_PORT),
       username: process.env.POSTGRES_USER,
