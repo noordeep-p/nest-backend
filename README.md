@@ -2,9 +2,12 @@
 
 ```bash
 # go to project root
+$ cp .env.example .env
+# insert correct env vars into .env file
+# go to docker folder
 cd ./docker
 $ cp .env.example .env
-# insert correct env values into .env file
+# insert correct env vars into .env file
 $ docker-compose up -d
 $ docker-compose exec node npm install
 

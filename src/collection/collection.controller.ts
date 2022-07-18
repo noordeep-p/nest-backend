@@ -23,7 +23,6 @@ export class CollectionController {
     @Req() request,
     @Body() createCollectionDto: CreateCollectionDto,
   ): Promise<Collection> {
-    console.log(createCollectionDto);
     return this.collectionService.create(request.user, createCollectionDto);
   }
 
