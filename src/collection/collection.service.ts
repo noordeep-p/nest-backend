@@ -1,38 +1,83 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, DeleteResult, Repository } from 'typeorm';
+import AddCollectionElementDto from './dtos/AddCollectionElement.dto';
 import CreateCollectionDto from './dtos/CreateCollection.dto';
+import UpdateCollectionDto from './dtos/UpdateCollection.dto';
 import Collection from './entities/collection.entity';
+import CollectionElement from './entities/collectionElement.entity';
 
 @Injectable()
 export class CollectionService {
   constructor(
     @InjectRepository(Collection)
-    private collectionsRepository: Repository<Collection>,
+    private collectionRepository: Repository<Collection>,
     private dataSource: DataSource,
   ) {}
 
-  create(
-    user: string,
+  public async findAll(): Promise<Collection[]> {
+    return await this.collectionRepository.find();
+  }
+
+  public async findAllByUser(userId: string): Promise<Collection[]> {
+    return await this.collectionRepository.findBy({
+      ownerId: userId,
+    });
+  }
+
+  public async findById(collectionId: string): Promise<Collection> {
+    return await this.collectionRepository.findOneBy({
+      id: collectionId,
+    });
+  }
+
+  public async create(
+    userId: string,
     createCollectionDto: CreateCollectionDto,
   ): Promise<Collection> {
     const collection = new Collection();
-    collection.ownerId = user;
+    collection.ownerId = userId;
     collection.title = createCollectionDto.title;
     collection.description = createCollectionDto.description;
     collection.isPrivate = createCollectionDto.isPrivate;
-    return this.collectionsRepository.save(collection);
+    return await this.collectionRepository.save(collection);
   }
 
-  findAll(): Promise<Collection[]> {
-    return this.collectionsRepository.find();
+  public async update(
+    userId: string,
+    collectionId: string,
+    updateDto: UpdateCollectionDto,
+  ): Promise<Collection> {
+    const collection = await this.collectionRepository.findOneBy({
+      id: collectionId,
+    });
+    if (collection.ownerId === userId) {
+      if (updateDto.title) {
+        collection.title = updateDto.title;
+      }
+      if (updateDto.description) {
+        collection.description = updateDto.description;
+      }
+      if (typeof updateDto.isPrivate !== 'undefined') {
+        collection.isPrivate = updateDto.isPrivate;
+      }
+      return await this.collectionRepository.save(collection);
+    } else {
+      throw new UnauthorizedException();
+    }
   }
 
-  findOne(id: string): Promise<Collection> {
-    return this.collectionsRepository.findOneBy({ id });
-  }
-
-  async remove(id: string): Promise<void> {
-    await this.collectionsRepository.delete(id);
+  public async delete(
+    userId: string,
+    collectionId: string,
+  ): Promise<DeleteResult> {
+    const collection = await this.collectionRepository.findOneBy({
+      id: collectionId,
+    });
+    if (collection.ownerId === userId) {
+      return await this.collectionRepository.delete(collection);
+    } else {
+      throw new UnauthorizedException();
+    }
   }
 }

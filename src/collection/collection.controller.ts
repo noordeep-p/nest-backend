@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -11,33 +12,60 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { CollectionService } from './collection.service';
 import CreateCollectionDto from './dtos/CreateCollection.dto';
+import UpdateCollectionDto from './dtos/UpdateCollection.dto';
 import Collection from './entities/collection.entity';
 
-@Controller('collection')
+@Controller('collections')
 export class CollectionController {
   constructor(private readonly collectionService: CollectionService) {}
 
-  @Post()
+  @Get()
   @UseGuards(AuthGuard('jwt'))
-  create(
-    @Req() request,
-    @Body() createCollectionDto: CreateCollectionDto,
-  ): Promise<Collection> {
-    return this.collectionService.create(request.user, createCollectionDto);
+  async findAll(): Promise<Collection[]> {
+    return await this.collectionService.findAll();
   }
 
-  @Get()
-  findAll(): Promise<Collection[]> {
-    return this.collectionService.findAll();
+  @Get('user')
+  @UseGuards(AuthGuard('jwt'))
+  async findAllByUser(@Req() request): Promise<Collection[]> {
+    const userId = request.user.sub;
+    return await this.collectionService.findAllByUser(userId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<Collection> {
-    return this.collectionService.findOne(id);
+  @UseGuards(AuthGuard('jwt'))
+  async findById(@Param('id') collectionId: string): Promise<Collection> {
+    return await this.collectionService.findById(collectionId);
+  }
+
+  @Post()
+  @UseGuards(AuthGuard('jwt'))
+  async create(
+    @Req() request,
+    @Body() createCollectionDto: CreateCollectionDto,
+  ): Promise<Collection> {
+    const userId = request.user.sub;
+    return await this.collectionService.create(userId, createCollectionDto);
+  }
+
+  @Patch(':id')
+  @UseGuards(AuthGuard('jwt'))
+  async update(
+    @Req() request,
+    @Param('id') collectionId: string,
+    @Body() updateDto: UpdateCollectionDto,
+  ) {
+    const userId = request.user.sub;
+    return await this.collectionService.update(userId, collectionId, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<void> {
-    return this.collectionService.remove(id);
+  @UseGuards(AuthGuard('jwt'))
+  async remove(
+    @Param('id') collectionId: string,
+    @Req() request,
+  ): Promise<any> {
+    const userId = request.user.sub;
+    return await this.collectionService.delete(userId, collectionId);
   }
 }
