@@ -12,8 +12,8 @@ import CollectionEntity from './collection.entity';
 export default class CollectionElement {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-  @Column({ name: 'work_id', type: 'text' })
-  work_id: string;
+  @Column({ name: 'value', type: 'text' })
+  value: string;
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
   @ManyToOne(() => CollectionEntity, (collection) => collection.elements, {
