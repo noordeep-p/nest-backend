@@ -6,11 +6,13 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CollectionService } from './collection.service';
+import AddCollectionElementDto from './dtos/AddCollectionElement.dto';
 import CreateCollectionDto from './dtos/CreateCollection.dto';
 import UpdateCollectionDto from './dtos/UpdateCollection.dto';
 import Collection from './entities/collection.entity';
@@ -67,5 +69,47 @@ export class CollectionController {
   ): Promise<any> {
     const userId = request.user.sub;
     return await this.collectionService.delete(userId, collectionId);
+  }
+
+  @Get('/api/collections/:id/elements')
+  @UseGuards(AuthGuard('jwt'))
+  public async getItems(@Req() request, @Param('id') collectionId: string) {
+    const userId = request.user.sub;
+    const page = request?.query?.page || 1;
+    const pageSize = request?.query?.pageSize || 10;
+    return await this.collectionService.getElements(
+      userId,
+      collectionId,
+      page,
+      pageSize,
+    );
+  }
+
+  @Put('/api/collections/:id/elements')
+  @UseGuards(AuthGuard('jwt'))
+  public async addItem(
+    @Req() request,
+    @Param('id') collectionId: string,
+    @Body() addElementDto: AddCollectionElementDto,
+  ) {
+    const userId = request.user.sub;
+    return await this.collectionService.addElement(
+      userId,
+      collectionId,
+      addElementDto,
+    );
+  }
+
+  @Delete('/api/collections/elements/:id')
+  @UseGuards(AuthGuard('jwt'))
+  public async removeItem(
+    @Req() request,
+    @Param('id') collectionElementId: string,
+  ) {
+    const userId = request.user.sub;
+    return await this.collectionService.removeElement(
+      userId,
+      collectionElementId,
+    );
   }
 }

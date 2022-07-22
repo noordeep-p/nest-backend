@@ -2,7 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
+  JoinTable,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -19,6 +19,6 @@ export default class CollectionElement {
   @ManyToOne(() => CollectionEntity, (collection) => collection.elements, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'collection_id' })
+  @JoinTable()
   collection: CollectionEntity;
 }

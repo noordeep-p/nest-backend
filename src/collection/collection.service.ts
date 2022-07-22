@@ -12,6 +12,8 @@ export class CollectionService {
   constructor(
     @InjectRepository(Collection)
     private collectionRepository: Repository<Collection>,
+    @InjectRepository(CollectionElement)
+    private collectionElementRepository: Repository<CollectionElement>,
     private dataSource: DataSource,
   ) {}
 
@@ -76,6 +78,65 @@ export class CollectionService {
     });
     if (collection.ownerId === userId) {
       return await this.collectionRepository.delete(collection);
+    } else {
+      throw new UnauthorizedException();
+    }
+  }
+
+  public async getElements(
+    userId: string,
+    collectionId: string,
+    page: number,
+    pageSize: number,
+  ): Promise<CollectionElement[]> {
+    return await this.dataSource
+      .getRepository(CollectionElement)
+      .createQueryBuilder('collectionElement')
+      .leftJoinAndSelect(
+        'collectionElement.collection',
+        'collection',
+        'collection.id = :collectionId',
+        { collectionId },
+      )
+      .where('collection.ownerId = :userId', { userId })
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getMany();
+  }
+
+  public async addElement(
+    userId: string,
+    collectionId: string,
+    addElementDto: AddCollectionElementDto,
+  ): Promise<CollectionElement> {
+    const collection = await this.collectionRepository.findOneBy({
+      id: collectionId,
+    });
+    if (collection.ownerId === userId) {
+      const collectionElement = new CollectionElement();
+      collectionElement.value = addElementDto.value;
+      collectionElement.collection = collection;
+      return await this.collectionElementRepository.save(collectionElement);
+    } else {
+      throw new UnauthorizedException();
+    }
+  }
+
+  public async removeElement(
+    userId: string,
+    collectionElementId: string,
+  ): Promise<CollectionElement> {
+    const collectionElement = await this.collectionElementRepository.findOne({
+      where: {
+        id: collectionElementId,
+      },
+      relations: {
+        collection: true,
+      },
+    });
+
+    if (collectionElement.collection.ownerId === userId) {
+      return await this.collectionElementRepository.remove(collectionElement);
     } else {
       throw new UnauthorizedException();
     }
