@@ -71,7 +71,7 @@ export class CollectionController {
     return await this.collectionService.delete(userId, collectionId);
   }
 
-  @Get('/api/collections/:id/elements')
+  @Get(':id/elements')
   @UseGuards(AuthGuard('jwt'))
   public async getItems(@Req() request, @Param('id') collectionId: string) {
     const userId = request.user.sub;
@@ -85,7 +85,7 @@ export class CollectionController {
     );
   }
 
-  @Put('/api/collections/:id/elements')
+  @Put(':id/elements')
   @UseGuards(AuthGuard('jwt'))
   public async addItem(
     @Req() request,
@@ -100,7 +100,7 @@ export class CollectionController {
     );
   }
 
-  @Delete('/api/collections/elements/:id')
+  @Delete('elements/:id')
   @UseGuards(AuthGuard('jwt'))
   public async removeItem(
     @Req() request,

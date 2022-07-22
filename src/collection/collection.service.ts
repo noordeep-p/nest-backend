@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, DeleteResult, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import AddCollectionElementDto from './dtos/AddCollectionElement.dto';
 import CreateCollectionDto from './dtos/CreateCollection.dto';
 import UpdateCollectionDto from './dtos/UpdateCollection.dto';
@@ -72,12 +72,12 @@ export class CollectionService {
   public async delete(
     userId: string,
     collectionId: string,
-  ): Promise<DeleteResult> {
+  ): Promise<Collection> {
     const collection = await this.collectionRepository.findOneBy({
       id: collectionId,
     });
     if (collection.ownerId === userId) {
-      return await this.collectionRepository.delete(collection);
+      return await this.collectionRepository.remove(collection);
     } else {
       throw new UnauthorizedException();
     }
@@ -101,6 +101,11 @@ export class CollectionService {
       .where('collection.ownerId = :userId', { userId })
       .skip((page - 1) * pageSize)
       .take(pageSize)
+      .select([
+        'collectionElement.id',
+        'collectionElement.value',
+        'collectionElement.createdAt',
+      ])
       .getMany();
   }
 
