@@ -15,7 +15,7 @@ export default class SearchController {
     private providerBuilderFactory: ProviderBuilderFactory,
   ) {}
 
-  @Post('/api/search')
+  @Post('search')
   @UseGuards(AuthGuard('jwt'))
   public async search(@Body() searchDto: SearchDto, @Request() request) {
     const searchModel = new SearchModel();
@@ -61,7 +61,7 @@ export default class SearchController {
       searchModel,
       (searchDto?.pagination?.page - 1) * searchDto?.pagination?.pageSize,
       searchDto?.pagination.pageSize,
-      request?.user,
+      request?.user.sub,
     );
 
     return this.searchResultResourceBuilder

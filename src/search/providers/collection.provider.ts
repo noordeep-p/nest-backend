@@ -1,19 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import Result from '../result';
 import SearchModel from '../searchModel';
-import WorkProvider from './work.provider';
 import SearchRunner from '../searchRunner';
 import { ProviderInterface } from './provider.interface';
-import { Repository } from 'typeorm';
-import Collection from 'src/collection/entities/collection.entity';
+import CollectionRepository from '../repositories/collection.repository';
 
 @Injectable()
 export default class CollectionProvider implements ProviderInterface {
   private static MAX_BLOCK_SIZE = 1000;
 
   public constructor(
-    private collectionRepository: Repository<Collection>,
-    private workProvider: WorkProvider,
+    private collectionRepository: CollectionRepository,
     private searchRunner: SearchRunner,
   ) {}
 
@@ -21,7 +18,7 @@ export default class CollectionProvider implements ProviderInterface {
     searchModel: SearchModel,
     offset: number,
     limit: number,
-    user?: string,
+    userId?: string,
   ) {
     const offsetCopy = offset;
     const limitCopy = limit;
@@ -35,9 +32,9 @@ export default class CollectionProvider implements ProviderInterface {
         ids,
         offset,
         limit,
-        user,
+        userId,
       );
-      totalCount = await this.length(searchModel, user);
+      totalCount = await this.length(searchModel, userId);
     }
 
     return new Result(
@@ -50,9 +47,9 @@ export default class CollectionProvider implements ProviderInterface {
     );
   }
 
-  public async length(searchModel: SearchModel, user?: string) {
+  public async length(searchModel: SearchModel, userId?: string) {
     const ids = await this.fetchIdentifiers(searchModel);
-    return this.collectionRepository.countCollectionsByWorkIds(ids, user);
+    return this.collectionRepository.countCollectionsByWorkIds(ids, userId);
   }
 
   public async fetchIdentifiers(searchModel: SearchModel) {
