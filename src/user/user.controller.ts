@@ -1,13 +1,14 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
+  Param,
   Patch,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import UpdatePasswordDto from './dtos/UpdatePassword.dto';
 import UpdateUserDto from './dtos/UpdateUser.dto';
 import { UserService } from './user.service';
 
@@ -29,10 +30,24 @@ export class UserController {
     };
   }
 
-  @Patch('user')
+  @Patch('user/:accessToken')
   @UseGuards(AuthGuard('jwt'))
-  public async update(@Body() updateUserDto: UpdateUserDto, @Req() request) {
-    const user = request.user;
-    return await this.userService.updateUserDetails(user.email, updateUserDto);
+  public async update(
+    @Body() updateUserDto: UpdateUserDto,
+    @Param('accessToken') accessToken: string,
+  ) {
+    return await this.userService.updateUserDetails(accessToken, updateUserDto);
+  }
+
+  @Patch('user/password/:accessToken')
+  @UseGuards(AuthGuard('jwt'))
+  public async updatePassword(
+    @Body() updatePasswordDto: UpdatePasswordDto,
+    @Param('accessToken') accessToken: string,
+  ) {
+    return await this.userService.updateUserPassword(
+      accessToken,
+      updatePasswordDto,
+    );
   }
 }

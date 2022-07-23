@@ -1,5 +1,4 @@
-export default class UpdateUserDto {
-  public username?: string;
-  public firstName?: string;
-  public lastName?: string;
+export default interface UpdateUserDto {
+  name?: string;
+  email?: string;
 }
