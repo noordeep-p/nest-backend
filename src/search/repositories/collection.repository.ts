@@ -1,7 +1,13 @@
-import { Repository } from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import Collection from '../../collection/entities/collection.entity';
 
+@Injectable()
 export default class CollectionRepository extends Repository<Collection> {
+  constructor(private dataSource: DataSource) {
+    super(Collection, new EntityManager(dataSource));
+  }
+
   public async findByUserAndTitle(userId: string, title: string) {
     return this.findOne({
       where: { ownerId: userId, title },
@@ -12,12 +18,14 @@ export default class CollectionRepository extends Repository<Collection> {
   }
 
   public async findCollections(offset: number, limit: number, userId?: string) {
-    const qb = this.createQueryBuilder('collection');
+    const qb = this.dataSource
+      .getRepository(Collection)
+      .createQueryBuilder('collection');
 
     qb.leftJoinAndSelect('collection.elements', 'element');
 
     if (userId) {
-      qb.where('(ownerId = :id or collection.isPrivate = :isPrivate)', {
+      qb.where('("ownerId" = :id or collection.isPrivate = :isPrivate)', {
         id: userId,
         isPrivate: false,
       });
@@ -79,7 +87,9 @@ export default class CollectionRepository extends Repository<Collection> {
   }
 
   private async prepareCollectionsByWorkIds(ids: string[], userId?: string) {
-    const qb = this.createQueryBuilder('collection');
+    const qb = this.dataSource
+      .getRepository(Collection)
+      .createQueryBuilder('collection');
 
     qb.distinct()
       .innerJoinAndSelect('collection.elements', 'element')
@@ -87,7 +97,7 @@ export default class CollectionRepository extends Repository<Collection> {
       .groupBy('collection.id, element.id')
       .orderBy('collection.id');
     if (userId) {
-      qb.andWhere('(ownerId = :id or collection.isPrivate = :isPrivate)', {
+      qb.andWhere('("ownerId" = :id or collection.isPrivate = :isPrivate)', {
         id: userId,
         isPrivate: false,
       });

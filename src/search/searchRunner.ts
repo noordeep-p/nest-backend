@@ -23,7 +23,6 @@ export default class SearchRunner {
       from: offset,
       size: limit,
     };
-    console.log(JSON.stringify(body, null, 2));
     const response = await this.client.search({ body });
     let records = response?.body?.hits?.hits || [];
     const totalCount = response?.body?.hits?.total?.value || 0;
