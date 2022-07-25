@@ -16,7 +16,7 @@ export default class SearchController {
   ) {}
 
   @Post('search')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard(['jwt', 'unauthenticated']))
   public async search(@Body() searchDto: SearchDto, @Request() request) {
     const searchModel = new SearchModel();
 
