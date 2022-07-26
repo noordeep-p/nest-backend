@@ -26,7 +26,7 @@ import CollectionElement from './collection/entities/collectionElement.entity';
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       entities: [Collection, CollectionElement],
-      synchronize: true,
+      synchronize: false,
     }),
   ],
 })
